@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Papu New\\source\\repos\\FileComparerAppWin\\FileComparerAppWin.csproj": {}
+    "C:\\Users\\Papu New\\Desktop\\FMCG Project\\Difference Finder\\FileComparerAppWin\\FileComparerAppWin.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Papu New\\source\\repos\\FileComparerAppWin\\FileComparerAppWin.csproj": {
+    "C:\\Users\\Papu New\\Desktop\\FMCG Project\\Difference Finder\\FileComparerAppWin\\FileComparerAppWin.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Papu New\\source\\repos\\FileComparerAppWin\\FileComparerAppWin.csproj",
+        "projectUniqueName": "C:\\Users\\Papu New\\Desktop\\FMCG Project\\Difference Finder\\FileComparerAppWin\\FileComparerAppWin.csproj",
         "projectName": "FileComparerAppWin",
-        "projectPath": "C:\\Users\\Papu New\\source\\repos\\FileComparerAppWin\\FileComparerAppWin.csproj",
+        "projectPath": "C:\\Users\\Papu New\\Desktop\\FMCG Project\\Difference Finder\\FileComparerAppWin\\FileComparerAppWin.csproj",
         "packagesPath": "C:\\Users\\Papu New\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Papu New\\source\\repos\\FileComparerAppWin\\obj\\",
+        "outputPath": "C:\\Users\\Papu New\\Desktop\\FMCG Project\\Difference Finder\\FileComparerAppWin\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

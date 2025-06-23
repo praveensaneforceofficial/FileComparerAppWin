@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Text.Json;
 using System.Diagnostics;
+using System.Threading;
+
 
 namespace FileComparerAppWin
 {
@@ -15,17 +17,16 @@ namespace FileComparerAppWin
         private string folderPath1;
         private string folderPath2;
         private string folderPath3;
-        private List<string> sameItems = new();
-        private List<string> diffItems = new();
-        private List<string> missingInCompare = new();
-        private List<string> missingInPrimary = new();
         private string saveFolderPath;
+
+        private List<ComparedFile> sameItems = new List<ComparedFile>();
+        private List<ComparedFile> diffItems = new List<ComparedFile>();
+        private List<ComparedFile> missingInCompare = new List<ComparedFile>();
+        private List<ComparedFile> missingInPrimary = new List<ComparedFile>();
 
         public MainForm()
         {
             InitializeComponent();
-
-            // 📌 Hook TreeView checkbox cascade
             treePrimary.AfterCheck += TreeView_AfterCheck;
             treeCompare.AfterCheck += TreeView_AfterCheck;
             treeThird.AfterCheck += TreeView_AfterCheck;
@@ -62,19 +63,17 @@ namespace FileComparerAppWin
 
             treeThird.Nodes.Clear();
 
-            var allPaths = sameItems
-                .Concat(diffItems)
-                .Concat(missingInCompare)
-                .Concat(missingInPrimary)
-                .Distinct()
-                .ToList();
+            var allFiles = sameItems.Concat(diffItems)
+                                  .Concat(missingInCompare)
+                                  .Concat(missingInPrimary)
+                                  .ToList();
 
             TreeNode rootNode = new TreeNode("Compared Files and Folders");
             treeThird.Nodes.Add(rootNode);
 
-            foreach (string relativePath in allPaths)
+            foreach (var file in allFiles)
             {
-                string[] parts = relativePath.Split(Path.DirectorySeparatorChar);
+                string[] parts = file.RelativePath.Split(Path.DirectorySeparatorChar);
                 TreeNode currentNode = rootNode;
 
                 for (int i = 0; i < parts.Length; i++)
@@ -89,43 +88,38 @@ namespace FileComparerAppWin
                     currentNode = existingNode;
                 }
 
-                // At leaf level, mark status
                 Color color = Color.Black;
                 float opacity = 1.0f;
 
-                if (sameItems.Contains(relativePath))
+                if (sameItems.Contains(file))
                 {
                     color = Color.Green;
                 }
-                else if (diffItems.Contains(relativePath))
+                else if (diffItems.Contains(file))
                 {
                     color = Color.HotPink;
                 }
-                else if (missingInCompare.Contains(relativePath))
+                else if (missingInCompare.Contains(file))
                 {
                     color = Color.Red;
                     opacity = 0.4f;
                 }
-                else if (missingInPrimary.Contains(relativePath))
+                else if (missingInPrimary.Contains(file))
                 {
                     color = Color.Blue;
                     opacity = 0.4f;
                 }
 
                 currentNode.ForeColor = Color.FromArgb((int)(255 * opacity), color);
+                currentNode.Tag = file;
             }
 
             rootNode.Expand();
         }
 
-
         private void LoadFolderToTree(string rootPath, TreeView treeView)
         {
-            if (string.IsNullOrWhiteSpace(rootPath))
-            {
-               
-                return;
-            }
+            if (string.IsNullOrWhiteSpace(rootPath)) return;
 
             if (!Directory.Exists(rootPath))
             {
@@ -143,12 +137,10 @@ namespace FileComparerAppWin
 
             treeView.Nodes.Add(rootNode);
             LoadSubDirs(rootDir, rootNode);
-          //  treeView.ExpandAll(); // Optional: Expand by default
         }
 
         private void LoadSubDirs(DirectoryInfo dir, TreeNode node)
         {
-            // Add folders
             foreach (var subDir in dir.GetDirectories())
             {
                 TreeNode subNode = new TreeNode(subDir.Name)
@@ -159,7 +151,6 @@ namespace FileComparerAppWin
                 LoadSubDirs(subDir, subNode);
             }
 
-            // Add files
             foreach (var file in dir.GetFiles())
             {
                 TreeNode fileNode = new TreeNode(file.Name)
@@ -200,22 +191,6 @@ namespace FileComparerAppWin
             }
         }
 
-        private void CollectCheckedFilesWithRelativePathRecursive(TreeNode node, List<(string, string)> files, string rootPath)
-        {
-            if (node.Checked && File.Exists(node.Tag.ToString()))
-            {
-                string relativePath = node.Tag.ToString().Substring(rootPath.Length)
-                    .TrimStart(Path.DirectorySeparatorChar);
-                files.Add((node.Tag.ToString(), relativePath));
-            }
-
-            foreach (TreeNode child in node.Nodes)
-            {
-                CollectCheckedFilesWithRelativePathRecursive(child, files, rootPath);
-            }
-        }
-
-        // ✅ Only get checked files
         private List<string> GetCheckedFiles(TreeView treeView)
         {
             var files = new List<string>();
@@ -239,32 +214,22 @@ namespace FileComparerAppWin
             }
         }
 
-        private CancellationTokenSource _cts;
-        private DateTime _lastCheckTime;
-
-        private CancellationTokenSource _checkOperationCts;
-
         private async void TreeView_AfterCheck(object sender, TreeViewEventArgs e)
         {
             if (e.Action == TreeViewAction.Unknown) return;
 
-            // Cancel any previous operation
             _checkOperationCts?.Cancel();
             _checkOperationCts = new CancellationTokenSource();
 
             try
             {
-                // Only show loader for operations that might take time
-                bool shouldShowLoader = e.Node.Nodes.Count > 10; // Adjust threshold as needed
-
+                bool shouldShowLoader = e.Node.Nodes.Count > 10;
                 if (shouldShowLoader)
                 {
                     using (var loader = new LoadingForm())
                     {
-                        // Show loader after a small delay (avoids flicker for quick operations)
-                        var showTask = Task.Delay(200); // 200ms delay
+                        var showTask = Task.Delay(200);
                         var workTask = ProcessCheckOperationAsync(e.Node, _checkOperationCts.Token);
-
                         if (await Task.WhenAny(showTask, workTask) == showTask)
                         {
                             loader.Show();
@@ -278,16 +243,12 @@ namespace FileComparerAppWin
                     await ProcessCheckOperationAsync(e.Node, _checkOperationCts.Token);
                 }
             }
-            catch (OperationCanceledException)
-            {
-                // Operation was cancelled - ignore
-            }
+            catch (OperationCanceledException) { }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Checkbox operation failed: {ex.Message}");
             }
         }
-
 
         private Task ProcessCheckOperationAsync(TreeNode node, CancellationToken ct)
         {
@@ -297,7 +258,6 @@ namespace FileComparerAppWin
 
                 this.Invoke((MethodInvoker)(() =>
                 {
-                    // Suspend drawing for performance
                     treePrimary.BeginUpdate();
                     treeCompare.BeginUpdate();
                     treeThird.BeginUpdate();
@@ -309,19 +269,12 @@ namespace FileComparerAppWin
                     }
                     finally
                     {
-                        // Resume drawing
                         treePrimary.EndUpdate();
                         treeCompare.EndUpdate();
                         treeThird.EndUpdate();
                     }
                 }));
             }, ct);
-        }
-
-        protected override void OnFormClosing(FormClosingEventArgs e)
-        {
-            _checkOperationCts?.Dispose();
-            base.OnFormClosing(e);
         }
 
         private void CheckAllChildNodes(TreeNode node, bool isChecked)
@@ -334,7 +287,6 @@ namespace FileComparerAppWin
             }
         }
 
-        // ✅ Async comparison with loader
         private async void btnCompare_Click(object sender, EventArgs e)
         {
             folderPath1 = txtFolder1.Text;
@@ -347,13 +299,63 @@ namespace FileComparerAppWin
             }
 
             using (var loader = new LoadingForm())
+            using (var cts = new CancellationTokenSource())
             {
+                var progress = new Progress<int>(percent =>
+                {
+                    loader.UpdateProgress(percent, $"🔄 Comparing folders... ({percent}%)");
+                });
+
+                loader.CancelRequested += (s, args) =>
+                {
+                    cts.Cancel();
+                };
+
                 loader.Show();
                 loader.Refresh();
 
-                await Task.Run(() => CompareFolders());
+                try
+                {
+                    await Task.Run(() => CompareFolders(progress, cts.Token), cts.Token);
 
-                loader.Close();
+                    this.Invoke(() =>
+                    {
+                        lstDifferences.Items.Clear();
+                        btnSame.Text = $"Same Items: {sameItems.Count}";
+                        btnDiff.Text = $"Different Items: {diffItems.Count}";
+                        btnMissingInCompare.Text = $"Missing in Compare: {missingInCompare.Count}";
+                        btnMissingInPrimary.Text = $"Missing in Primary: {missingInPrimary.Count}";
+                        lstDifferences.Items.Add("Click any summary button to view file list.");
+                        PopulateThirdTree();
+                    });
+                }
+                catch (OperationCanceledException)
+                {
+                    this.Invoke(() =>
+                    {
+                        lstDifferences.Items.Clear();
+                        lstDifferences.Items.Add("Comparison was cancelled by user. Showing partial results:");
+
+                        // Show partial results
+                        btnSame.Text = $"Same Items: {sameItems.Count}";
+                        btnDiff.Text = $"Different Items: {diffItems.Count}";
+                        btnMissingInCompare.Text = $"Missing in Compare: {missingInCompare.Count}";
+                        btnMissingInPrimary.Text = $"Missing in Primary: {missingInPrimary.Count}";
+                        PopulateThirdTree();
+                    });
+                }
+                catch (Exception ex)
+                {
+                    this.Invoke(() =>
+                    {
+                        MessageBox.Show($"Error during comparison: {ex.Message}", "Error",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    });
+                }
+                finally
+                {
+                    loader.Close();
+                }
             }
         }
 
@@ -378,117 +380,205 @@ namespace FileComparerAppWin
             return rootPath;
         }
 
-        private void CompareFolders()
+
+        private void CompareFolders(IProgress<int> progress, CancellationToken cancellationToken)
         {
             sameItems.Clear();
             diffItems.Clear();
             missingInCompare.Clear();
             missingInPrimary.Clear();
 
-            // Get checked files with relative paths from their checked roots
             var primaryFiles = GetCheckedFilesWithRelativePath(treePrimary);
             var compareFiles = GetCheckedFilesWithRelativePath(treeCompare);
 
-            // Extract just the relative paths for comparison
             var files1 = primaryFiles.Select(f => f.RelativePath).ToList();
             var files2 = compareFiles.Select(f => f.RelativePath).ToList();
 
-            // Split into three categories
             var onlyInPrimary = files1.Except(files2).ToList();
             var onlyInCompare = files2.Except(files1).ToList();
             var inBoth = files1.Intersect(files2).ToList();
 
-            // Compare files that exist on both sides
+            int totalFiles = inBoth.Count + onlyInPrimary.Count + onlyInCompare.Count;
+            int processedFiles = 0;
+
             foreach (var relativePath in inBoth)
             {
-                var fullPath1 = primaryFiles.First(f => f.RelativePath == relativePath).FullPath;
-                var fullPath2 = compareFiles.First(f => f.RelativePath == relativePath).FullPath;
+                // Check for cancellation
+                cancellationToken.ThrowIfCancellationRequested();
 
-                if (!File.Exists(fullPath1))
+                var primaryFile = primaryFiles.First(f => f.RelativePath == relativePath);
+                var compareFile = compareFiles.First(f => f.RelativePath == relativePath);
+
+                if (!File.Exists(primaryFile.FullPath))
                 {
-                    missingInCompare.Add(relativePath);
+                    missingInCompare.Add(new ComparedFile
+                    {
+                        RelativePath = relativePath,
+                        PrimaryPath = primaryFile.FullPath,
+                        Status = "MissingInCompare"
+                    });
                     continue;
                 }
 
-                if (!File.Exists(fullPath2))
+                if (!File.Exists(compareFile.FullPath))
                 {
-                    missingInPrimary.Add(relativePath);
+                    missingInPrimary.Add(new ComparedFile
+                    {
+                        RelativePath = relativePath,
+                        ComparePath = compareFile.FullPath,
+                        Status = "MissingInPrimary"
+                    });
                     continue;
                 }
 
-                if (!FileEquals(fullPath1, fullPath2))
+                if (!FileEquals(primaryFile.FullPath, compareFile.FullPath))
                 {
-                    diffItems.Add(relativePath);
+                    diffItems.Add(new ComparedFile
+                    {
+                        RelativePath = relativePath,
+                        PrimaryPath = primaryFile.FullPath,
+                        ComparePath = compareFile.FullPath,
+                        Status = "Different"
+                    });
                 }
                 else
                 {
-                    sameItems.Add(relativePath);
+                    sameItems.Add(new ComparedFile
+                    {
+                        RelativePath = relativePath,
+                        PrimaryPath = primaryFile.FullPath,
+                        ComparePath = compareFile.FullPath,
+                        Status = "Same"
+                    });
                 }
+
+                processedFiles++;
+                int percent = (int)((double)processedFiles / totalFiles * 100);
+                progress?.Report(percent);
             }
 
-            // Add non-matching files
-            missingInCompare.AddRange(onlyInPrimary);
-            missingInPrimary.AddRange(onlyInCompare);
+            // Check for cancellation before processing remaining files
+            cancellationToken.ThrowIfCancellationRequested();
 
-            // Update UI
+            missingInCompare.AddRange(onlyInPrimary.Select(relPath => new ComparedFile
+            {
+                RelativePath = relPath,
+                PrimaryPath = primaryFiles.First(f => f.RelativePath == relPath).FullPath,
+                Status = "MissingInCompare"
+            }));
+
+            missingInPrimary.AddRange(onlyInCompare.Select(relPath => new ComparedFile
+            {
+                RelativePath = relPath,
+                ComparePath = compareFiles.First(f => f.RelativePath == relPath).FullPath,
+                Status = "MissingInPrimary"
+            }));
+
+            progress?.Report(100);
+
             this.Invoke(() =>
             {
                 lstDifferences.Items.Clear();
-
                 btnSame.Text = $"Same Items: {sameItems.Count}";
-                btnSame.BackColor = Color.Green;
-                btnSame.ForeColor = Color.White;
-
                 btnDiff.Text = $"Different Items: {diffItems.Count}";
-                btnDiff.BackColor = Color.HotPink;
-                btnDiff.ForeColor = Color.White;
-
                 btnMissingInCompare.Text = $"Missing in Compare: {missingInCompare.Count}";
-                btnMissingInCompare.BackColor = Color.Red;
-                btnMissingInCompare.ForeColor = Color.White;
-
                 btnMissingInPrimary.Text = $"Missing in Primary: {missingInPrimary.Count}";
-                btnMissingInPrimary.BackColor = Color.Blue;
-                btnMissingInPrimary.ForeColor = Color.White;
-
                 lstDifferences.Items.Add("Click any summary button to view file list.");
                 PopulateThirdTree();
             });
         }
 
+        private string Normalize(string line)
+        {
+            return line?.Trim().Replace(" ", "").Replace("\t", "").ToLowerInvariant();
+        }
+
         private bool FileEquals(string file1, string file2)
         {
-            var content1 = File.ReadAllBytes(file1);
-            var content2 = File.ReadAllBytes(file2);
-            return content1.SequenceEqual(content2);
+            // Read lines from both files
+            var primaryLines = File.ReadAllLines(file1); // Read primary file
+            var secondaryLines = File.ReadAllLines(file2); // Read secondary file
+
+            // Run line diff using GetLineDiffs logic
+            int m = primaryLines.Length;
+            int n = secondaryLines.Length;
+            int[,] lcs = new int[m + 1, n + 1];
+
+            // Build LCS matrix
+            for (int i = 0; i < m; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    if (Normalize(primaryLines[i]) == Normalize(secondaryLines[j]))
+                        lcs[i + 1, j + 1] = lcs[i, j] + 1;
+                    else
+                        lcs[i + 1, j + 1] = Math.Max(lcs[i + 1, j], lcs[i, j + 1]);
+                }
+            }
+
+            // Backtrack to find diff and detect mismatch
+            int x = m, y = n;
+            while (x > 0 && y > 0)
+            {
+                if (Normalize(primaryLines[x - 1]) == Normalize(secondaryLines[y - 1]))
+                {
+                    x--; y--;
+                }
+                else if (lcs[x - 1, y] >= lcs[x, y - 1])
+                {
+                    return false; // Mismatch found
+                }
+                else
+                {
+                    return false; // Mismatch found
+                }
+            }
+
+            // If any lines are left in either file, they don't match
+            if (x > 0 || y > 0)
+                return false;
+
+            return true; // All lines match
         }
 
         private void BtnSame_Click(object sender, EventArgs e)
         {
             lstDifferences.Items.Clear();
             foreach (var file in sameItems)
+            {
                 lstDifferences.Items.Add(file);
+
+            }
         }
 
         private void BtnDiff_Click(object sender, EventArgs e)
         {
             lstDifferences.Items.Clear();
             foreach (var file in diffItems)
+            {
                 lstDifferences.Items.Add(file);
+
+            }
         }
 
         private void BtnMissingInCompare_Click(object sender, EventArgs e)
         {
             lstDifferences.Items.Clear();
             foreach (var file in missingInCompare)
+            {
                 lstDifferences.Items.Add(file);
+
+            }
         }
 
         private void BtnMissingInPrimary_Click(object sender, EventArgs e)
         {
             lstDifferences.Items.Clear();
             foreach (var file in missingInPrimary)
+            {
                 lstDifferences.Items.Add(file);
+
+            }
         }
 
         private void btnSave_Click(object sender, EventArgs e)
@@ -496,8 +586,6 @@ namespace FileComparerAppWin
             using (SaveFileDialog dialog = new SaveFileDialog())
             {
                 dialog.Filter = "Comparison Files (*.cmp)|*.cmp|All Files (*.*)|*.*";
-                dialog.Title = "Save Comparison Result";
-
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     var result = new ComparisonResult
@@ -507,48 +595,39 @@ namespace FileComparerAppWin
                         FolderPath3 = folderPath3,
                         CheckedFilesPrimary = GetCheckedFiles(treePrimary),
                         CheckedFilesCompare = GetCheckedFiles(treeCompare),
-                        CheckedFilesThird = GetCheckedFiles(treeCompare),
-                        SameItems = sameItems,
-                        DiffItems = diffItems,
-                        MissingInCompare = missingInCompare,
-                        MissingInPrimary = missingInPrimary,
+                        CheckedFilesThird = GetCheckedFiles(treeThird),
+                        SameItems = sameItems.Select(f => f.RelativePath).ToList(),
+                        DiffItems = diffItems.Select(f => f.RelativePath).ToList(),
+                        MissingInCompare = missingInCompare.Select(f => f.RelativePath).ToList(),
+                        MissingInPrimary = missingInPrimary.Select(f => f.RelativePath).ToList(),
                         ExpandedNodesPrimary = GetExpandedNodes(treePrimary),
                         ExpandedNodesCompare = GetExpandedNodes(treeCompare),
                         ExpandedNodesThird = GetExpandedNodes(treeThird)
                     };
 
-                    string json = JsonSerializer.Serialize(result);
-                    File.WriteAllText(dialog.FileName, json);
+                    File.WriteAllText(dialog.FileName, JsonSerializer.Serialize(result));
                 }
             }
         }
-
 
         private void btnLoad_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog dialog = new OpenFileDialog())
             {
                 dialog.Filter = "Comparison Files (*.cmp)|*.cmp|All Files (*.*)|*.*";
-                dialog.Title = "Load Comparison Result";
-
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    string json = File.ReadAllText(dialog.FileName);
-                    var result = JsonSerializer.Deserialize<ComparisonResult>(json);
-
+                    var result = JsonSerializer.Deserialize<ComparisonResult>(File.ReadAllText(dialog.FileName));
                     if (result != null)
                     {
-                        sameItems = result.SameItems ?? new();
-                        diffItems = result.DiffItems ?? new();
-                        missingInCompare = result.MissingInCompare ?? new();
-                        missingInPrimary = result.MissingInPrimary ?? new();
+                        sameItems = result.SameItems.Select(relPath => new ComparedFile { RelativePath = relPath }).ToList();
+                        diffItems = result.DiffItems.Select(relPath => new ComparedFile { RelativePath = relPath }).ToList();
+                        missingInCompare = result.MissingInCompare.Select(relPath => new ComparedFile { RelativePath = relPath }).ToList();
+                        missingInPrimary = result.MissingInPrimary.Select(relPath => new ComparedFile { RelativePath = relPath }).ToList();
 
                         folderPath1 = result.FolderPath1;
                         folderPath2 = result.FolderPath2;
                         folderPath3 = result.FolderPath3;
-                        // txtFolder1.Text = GetTrimmedPath(folderPath1);
-                        //txtFolder2.Text = GetTrimmedPath(folderPath2);
-                        // txtFolder2.Text = GetTrimmedPath(folderPath3);
 
                         txtFolder1.Text = folderPath1;
                         txtFolder2.Text = folderPath2;
@@ -557,9 +636,8 @@ namespace FileComparerAppWin
                         LoadFolderToTree(folderPath1, treePrimary);
                         LoadFolderToTree(folderPath2, treeCompare);
                         LoadFolderToTree(folderPath3, treeThird);
-                        // 📌 Delay checkbox restore after UI tree is built
-                        this.BeginInvoke(async () =>
 
+                        this.BeginInvoke(async () =>
                         {
                             SetCheckedNodes(treePrimary, result.CheckedFilesPrimary);
                             SetCheckedNodes(treeCompare, result.CheckedFilesCompare);
@@ -567,61 +645,151 @@ namespace FileComparerAppWin
                             ExpandNodes(treePrimary, result.ExpandedNodesPrimary);
                             ExpandNodes(treeCompare, result.ExpandedNodesCompare);
                             ExpandNodes(treeThird, result.ExpandedNodesThird);
-                            // 📌 NEW CODE: Force UI to process checkbox update fully
-                            treePrimary.EndUpdate(); // 🔁 Force TreeView to process changes
-                            treeCompare.EndUpdate();
-                            treeThird.EndUpdate();
                             await Task.Delay(100);
+                            RefreshSummaryUI();
                         });
-
-
-                        RefreshSummaryUI();
                     }
                 }
             }
         }
 
-        private void RefreshSummaryUI()
+
+        private void lstDifferences_DoubleClick(object sender, EventArgs e)
         {
-            lstDifferences.Items.Clear();
+            if (!(sender is ListBox listBox) || listBox.SelectedItem == null)
+                return;
 
+            // Now we can directly cast SelectedItem to ComparedFile
+            if (!(listBox.SelectedItem is ComparedFile fileData))
+            {
+                MessageBox.Show("No file data associated with this item.", "Error",
+                               MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
-            btnSame.Text = $"Same Items: {sameItems.Count}";
-            btnSame.BackColor = Color.Green;
-            btnSame.ForeColor = Color.White;
+            // Rest of your existing double-click logic...
+            bool primaryExists = !string.IsNullOrEmpty(fileData.PrimaryPath) && File.Exists(fileData.PrimaryPath);
+            bool secondaryExists = !string.IsNullOrEmpty(fileData.ComparePath) && File.Exists(fileData.ComparePath);
 
-            btnDiff.Text = $"Different Items: {diffItems.Count}";
-            btnDiff.BackColor = Color.HotPink;
-            btnDiff.ForeColor = Color.White;
+            if (!primaryExists || !secondaryExists)
+            {
+                string message = $"Primary: {fileData.PrimaryPath ?? "N/A"}\nStatus: {(primaryExists ? "Found" : "Missing")}\n\n" +
+                                $"Secondary: {fileData.ComparePath ?? "N/A"}\nStatus: {(secondaryExists ? "Found" : "Missing")}";
 
-            btnMissingInCompare.Text = $"Missing in Compare: {missingInCompare.Count}";
-            btnMissingInCompare.BackColor = Color.Red;
-            btnMissingInCompare.ForeColor = Color.White;
+                MessageBox.Show(message, "File Status", MessageBoxButtons.OK,
+                    primaryExists && secondaryExists ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+                return;
+            }
 
-            btnMissingInPrimary.Text = $"Missing in Primary: {missingInPrimary.Count}";
-            btnMissingInPrimary.BackColor = Color.Blue;
-            btnMissingInPrimary.ForeColor = Color.White;
+            if (fileData.Status == "Different")
+            {
+                var loader = new LoadingForm();
+                loader.Show();
 
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        string primaryText = File.ReadAllText(fileData.PrimaryPath);
+                        string secondaryText = File.ReadAllText(fileData.ComparePath);
 
-            /*
-            btnSame.Text = $"✅ Same Items: {sameItems.Count}";
-            btnDiff.Text = $"❌ Different Items: {diffItems.Count}";
-            btnMissingInCompare.Text = $"🔺 Missing in Secondary: {missingInCompare.Count}";
-            btnMissingInPrimary.Text = $"🔻 Missing in Primary: {missingInPrimary.Count}";*/
-            lstDifferences.Items.Add("Click any summary button to view file list.");
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            loader.Close();
+                            new DiffViewerForm(primaryText, secondaryText).ShowDialog();
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            loader.Close();
+                            MessageBox.Show($"Error comparing files:\n{ex.Message}",
+                                          "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        });
+                    }
+                });
+            }
+        }
+
+        private void UpdateParentCheckState(TreeNode node)
+        {
+            if (node.Parent == null) return;
+            node.Parent.Checked = node.Parent.Nodes.Cast<TreeNode>().All(n => n.Checked);
+            UpdateParentCheckState(node.Parent);
+        }
+
+        private List<string> GetExpandedNodes(TreeView treeView)
+        {
+            var expanded = new List<string>();
+            foreach (TreeNode node in treeView.Nodes)
+            {
+                CollectExpandedNodes(node, expanded);
+            }
+            return expanded;
+        }
+
+        private void CollectExpandedNodes(TreeNode node, List<string> expanded)
+        {
+            if (node.IsExpanded && node.Tag is string tag)
+            {
+                expanded.Add(tag);
+            }
+            foreach (TreeNode child in node.Nodes)
+            {
+                CollectExpandedNodes(child, expanded);
+            }
+        }
+
+        private void ExpandNodes(TreeView treeView, List<string> expandedPaths)
+        {
+            foreach (TreeNode node in treeView.Nodes)
+            {
+                ExpandMatchingNodes(node, expandedPaths);
+            }
+        }
+
+        private void ExpandMatchingNodes(TreeNode node, List<string> expandedPaths)
+        {
+            if (node.Tag is string tag && expandedPaths.Contains(tag))
+            {
+                node.Expand();
+            }
+            foreach (TreeNode child in node.Nodes)
+            {
+                ExpandMatchingNodes(child, expandedPaths);
+            }
+        }
+
+        private void SetCheckedNodes(TreeView treeView, List<string> fullPaths)
+        {
+            var normalizedPaths = fullPaths.Select(p => Path.GetFullPath(p).ToLowerInvariant()).ToHashSet();
+            foreach (TreeNode node in treeView.Nodes)
+            {
+                SetCheckedNodesRecursive(node, normalizedPaths);
+            }
+        }
+
+        private void SetCheckedNodesRecursive(TreeNode node, HashSet<string> normalizedPaths)
+        {
+            if (node.Tag is string tag && normalizedPaths.Contains(Path.GetFullPath(tag).ToLowerInvariant()))
+            {
+                node.Checked = true;
+            }
+            foreach (TreeNode child in node.Nodes)
+            {
+                SetCheckedNodesRecursive(child, normalizedPaths);
+            }
         }
 
         private void btnBrowse3_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
             {
-                dialog.Description = "Select folder to save comparison result";
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-
                     txtFolder3.Text = dialog.SelectedPath;
                     saveFolderPath = dialog.SelectedPath;
-                    MessageBox.Show($"Selected folder: {saveFolderPath}");
                 }
             }
         }
@@ -632,7 +800,6 @@ namespace FileComparerAppWin
             txtFolder1.Text = txtFolder2.Text = txtFolder3.Text = "";
             treePrimary.Nodes.Clear();
             treeCompare.Nodes.Clear();
-
             treeThird.Nodes.Clear();
             sameItems.Clear();
             diffItems.Clear();
@@ -640,192 +807,63 @@ namespace FileComparerAppWin
             missingInPrimary.Clear();
             lstDifferences.Items.Clear();
 
+            btnSame.Text = $"Same Items: 0";
+            btnDiff.Text = $"Different Items: 0";
+            btnMissingInCompare.Text = $"Missing in Compare: 0";
+            btnMissingInPrimary.Text = $"Missing in Primary: 0";
+        }
+
+        private void RefreshSummaryUI()
+        {
+            lstDifferences.Items.Clear();
             btnSame.Text = $"Same Items: {sameItems.Count}";
-            btnSame.BackColor = Color.Green;
-            btnSame.ForeColor = Color.White;
-
             btnDiff.Text = $"Different Items: {diffItems.Count}";
-            btnDiff.BackColor = Color.HotPink;
-            btnDiff.ForeColor = Color.White;
-
             btnMissingInCompare.Text = $"Missing in Compare: {missingInCompare.Count}";
-            btnMissingInCompare.BackColor = Color.Red;
-            btnMissingInCompare.ForeColor = Color.White;
-
             btnMissingInPrimary.Text = $"Missing in Primary: {missingInPrimary.Count}";
-            btnMissingInPrimary.BackColor = Color.Blue;
-            btnMissingInPrimary.ForeColor = Color.White;
-            /*
-
-            btnSame.Text = "✅ Same Items";
-            btnDiff.Text = "❌ Different Items";
-            btnMissingInCompare.Text = "🔺 Missing in Secondary";
-            btnMissingInPrimary.Text = "🔻 Missing in Primary"; */
+            lstDifferences.Items.Add("Click any summary button to view file list.");
         }
-
-        private void SetCheckedNodes(TreeView treeView, List<string> fullPaths)
-        {
-            var normalizedPaths = fullPaths
-                .Select(p => Path.GetFullPath(p).TrimEnd(Path.DirectorySeparatorChar).ToLowerInvariant())
-                .ToHashSet();
-
-            void CheckMatching(TreeNode node)
-            {
-                if (node.Tag is string tag &&
-                    normalizedPaths.Contains(Path.GetFullPath(tag).TrimEnd(Path.DirectorySeparatorChar).ToLowerInvariant()))
-                {
-                    node.Checked = true;
-                    CheckAllChildNodes(node, true);
-                    UpdateParentCheckState(node);
-                }
-
-                foreach (TreeNode child in node.Nodes)
-                    CheckMatching(child);
-            }
-
-            foreach (TreeNode node in treeView.Nodes)
-                CheckMatching(node);
-        }
-
-        private void lstDifferences_DoubleClick(object sender, EventArgs e)
-        {
-            if (lstDifferences.SelectedItem == null) return;
-
-            string selectedDifference = lstDifferences.SelectedItem.ToString();
-
-            string primaryPath = Path.Combine(folderPath1, selectedDifference);
-            string secondaryPath = Path.Combine(folderPath2, selectedDifference);
-
-            // Check which files exist and which are missing
-            bool primaryExists = File.Exists(primaryPath);
-            bool secondaryExists = File.Exists(secondaryPath);
-
-            if (!primaryExists || !secondaryExists)
-            {
-                string message = "File status:\n\n";
-                message += $"Primary location: {primaryPath}\n";
-                message += $"Status: {(primaryExists ? "Found" : "Missing")}\n\n";
-                message += $"Secondary location: {secondaryPath}\n";
-                message += $"Status: {(secondaryExists ? "Found" : "Missing")}";
-
-                MessageBox.Show(message, "File Comparison Status",
-                              MessageBoxButtons.OK,
-                              primaryExists && secondaryExists ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
-                return;
-            }
-
-            // Show loading form
-            LoadingForm loading = new LoadingForm();
-            loading.Show();
-
-            // Compare files in background
-            Task.Run(() =>
-            {
-                try
-                {
-                    string primaryCode = File.ReadAllText(primaryPath);
-                    string secondaryCode = File.ReadAllText(secondaryPath);
-
-                    this.Invoke((MethodInvoker)delegate
-                    {
-                        loading.Close();
-                        var viewer = new DiffViewerForm(primaryCode, secondaryCode);
-                        viewer.ShowDialog();
-                    });
-                }
-                catch (Exception ex)
-                {
-                    this.Invoke((MethodInvoker)delegate
-                    {
-                        loading.Close();
-                        MessageBox.Show($"Error comparing files:\n{ex.Message}",
-                                       "Comparison Error",
-                                       MessageBoxButtons.OK,
-                                       MessageBoxIcon.Error);
-                    });
-                }
-            });
-        }
-
-        private void UpdateParentCheckState(TreeNode node)
-        {
-            if (node.Parent == null) return;
-
-            bool allChecked = node.Parent.Nodes.Cast<TreeNode>().All(n => n.Checked);
-            bool anyChecked = node.Parent.Nodes.Cast<TreeNode>().Any(n => n.Checked);
-
-            node.Parent.Checked = allChecked;
-
-            // Recursively update parent
-            UpdateParentCheckState(node.Parent);
-        }
-
-        private List<string> GetExpandedNodes(TreeView treeView)
-        {
-            var expanded = new List<string>();
-
-            void Collect(TreeNode node)
-            {
-                // ✅ Only process if Tag is a string and points to an existing directory
-                if (node.IsExpanded && node.Tag is string tag && Directory.Exists(tag))
-                {
-                    expanded.Add(tag);
-                }
-
-                // ✅ Recurse through all children
-                foreach (TreeNode child in node.Nodes)
-                    Collect(child);
-            }
-
-            // ✅ Start from all root nodes
-            foreach (TreeNode node in treeView.Nodes)
-                Collect(node);
-
-            return expanded;
-        }
-
-        private void ExpandNodes(TreeView treeView, List<string> expandedPaths)
-        {
-            void ExpandMatching(TreeNode node)
-            {
-                if (node.Tag is string tag && expandedPaths.Contains(tag))
-                    node.Expand();
-
-                foreach (TreeNode child in node.Nodes)
-                    ExpandMatching(child);
-            }
-
-            foreach (TreeNode node in treeView.Nodes)
-                ExpandMatching(node);
-        }
-
+        private CancellationTokenSource _checkOperationCts;
 
     }
+
 
     [Serializable]
     public class ComparisonResult
     {
-        public List<string> ExpandedNodesPrimary { get; set; }   // 📌 For storing expanded folders
-        public List<string> ExpandedNodesCompare { get; set; }
-        public List<string> ExpandedNodesThird { get; set; }
+        public List<string> ExpandedNodesPrimary { get; set; } = new List<string>();
+        public List<string> ExpandedNodesCompare { get; set; } = new List<string>();
+        public List<string> ExpandedNodesThird { get; set; } = new List<string>();
 
-        
-        public string FolderPath1 { get; set; }   // 📌 Save Primary path
-        public string FolderPath2 { get; set; }   // 📌 Save Compare path
-
+        public string FolderPath1 { get; set; }
+        public string FolderPath2 { get; set; }
         public string FolderPath3 { get; set; }
 
-        public List<string> CheckedFilesPrimary { get; set; }   // 📌 Save selected files
-        public List<string> CheckedFilesCompare { get; set; }
+        public List<string> CheckedFilesPrimary { get; set; } = new List<string>();
+        public List<string> CheckedFilesCompare { get; set; } = new List<string>();
+        public List<string> CheckedFilesThird { get; set; } = new List<string>();
 
-        public List<string> CheckedFilesThird { get; set; }
-
-        public List<string> SameItems { get; set; }
-        public List<string> DiffItems { get; set; }
-        public List<string> MissingInCompare { get; set; }
-        public List<string> MissingInPrimary { get; set; }
-
+        public List<string> SameItems { get; set; } = new List<string>();
+        public List<string> DiffItems { get; set; } = new List<string>();
+        public List<string> MissingInCompare { get; set; } = new List<string>();
+        public List<string> MissingInPrimary { get; set; } = new List<string>();
     }
 
+    public class ComparedFile
+    {
+        public string RelativePath { get; set; }
+        public string PrimaryPath { get; set; }
+        public string ComparePath { get; set; }
+        public string Status { get; set; }
 
+        public override bool Equals(object obj)
+        {
+            return obj is ComparedFile file &&
+                   RelativePath == file.RelativePath;
+        }
+
+        public override int GetHashCode()
+        {
+            return RelativePath.GetHashCode();
+        }
+    }
 }

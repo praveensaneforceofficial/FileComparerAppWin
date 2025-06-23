@@ -7,17 +7,45 @@ namespace FileComparerAppWin
 {
     public partial class DiffViewerForm : Form
     {
-        private RichTextBox txtPrimary;
-        private RichTextBox txtSecondary;
+        // 👇 Replaced RichTextBox with SyncRichTextBox
+        private SyncRichTextBox txtPrimary;
+        private SyncRichTextBox txtSecondary;
         private Panel diffMapPanel;
+        private RichTextBox txtMerged; // 👈 Added for merged output
         private List<int> diffLines = new List<int>();
 
         public DiffViewerForm(string primaryCode, string secondaryCode)
         {
             this.Text = "🔍 Code Difference Viewer";
-            this.Size = new Size(1000, 600);
-            this.MinimumSize = new Size(800, 500);
+            this.Size = new Size(1000, 700);
+            this.MinimumSize = new Size(800, 600);
 
+            // 👇 Create outer layout to include buttons, code view, and merged panel
+            var outerLayout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                RowCount = 3,
+                ColumnCount = 1
+            };
+            outerLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));     // Buttons row
+            outerLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 70));     // Code viewer
+            outerLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 30));     // Merged output
+
+            // 👇 Add buttons
+            var buttonPanel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.LeftToRight,
+                Padding = new Padding(10)
+            };
+            var btnPrimary = new Button { Text = "Primary", Width = 100 };
+            var btnSecondary = new Button { Text = "Secondary", Width = 100 };
+            var btnBoth = new Button { Text = "Both", Width = 100 };
+            buttonPanel.Controls.Add(btnPrimary);
+            buttonPanel.Controls.Add(btnSecondary);
+            buttonPanel.Controls.Add(btnBoth);
+
+            // 👇 Create main diff layout (primary + secondary + diff map)
             var layout = new TableLayoutPanel();
             layout.Dock = DockStyle.Fill;
             layout.ColumnCount = 3;
@@ -25,7 +53,7 @@ namespace FileComparerAppWin
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 49.5f));
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 1f));
 
-            txtPrimary = new RichTextBox
+            txtPrimary = new SyncRichTextBox
             {
                 Dock = DockStyle.Fill,
                 ReadOnly = true,
@@ -34,7 +62,7 @@ namespace FileComparerAppWin
                 Font = new Font("Consolas", 10)
             };
 
-            txtSecondary = new RichTextBox
+            txtSecondary = new SyncRichTextBox
             {
                 Dock = DockStyle.Fill,
                 ReadOnly = true,
@@ -42,6 +70,10 @@ namespace FileComparerAppWin
                 ScrollBars = RichTextBoxScrollBars.Both,
                 Font = new Font("Consolas", 10)
             };
+
+            // 👇 Scroll sync setup
+            txtPrimary.Scroll += (s, e) => txtSecondary.SyncScrollWith(txtPrimary);
+            txtSecondary.Scroll += (s, e) => txtPrimary.SyncScrollWith(txtSecondary);
 
             diffMapPanel = new Panel
             {
@@ -55,9 +87,51 @@ namespace FileComparerAppWin
             layout.Controls.Add(txtPrimary, 0, 0);
             layout.Controls.Add(txtSecondary, 1, 0);
             layout.Controls.Add(diffMapPanel, 2, 0);
-            this.Controls.Add(layout);
 
+            // 👇 Merged output richtextbox
+            txtMerged = new RichTextBox
+            {
+                Dock = DockStyle.Fill,
+                ReadOnly = false,
+                WordWrap = false,
+                ScrollBars = RichTextBoxScrollBars.Both,
+                Font = new Font("Consolas", 10),
+                BackColor = Color.LightYellow
+            };
+
+            // 👇 Add all components to outer layout
+            outerLayout.Controls.Add(buttonPanel, 0, 0); // Top row
+            outerLayout.Controls.Add(layout, 0, 1);      // Middle row (code)
+            outerLayout.Controls.Add(txtMerged, 0, 2);    // Bottom row (merged)
+
+            this.Controls.Add(outerLayout);
+
+            // 👇 Show diffs
             ShowDifferences(primaryCode, secondaryCode);
+
+            // 👇 Button click events for merging
+            btnPrimary.Click += (s, e) =>
+            {
+                txtMerged.Clear();
+                txtMerged.AppendText(txtPrimary.Text);
+            };
+
+            btnSecondary.Click += (s, e) =>
+            {
+                txtMerged.Clear();
+                txtMerged.AppendText(txtSecondary.Text);
+            };
+
+            btnBoth.Click += (s, e) =>
+            {
+                txtMerged.Clear();
+                for (int i = 0; i < txtPrimary.Lines.Length; i++)
+                {
+                    string pLine = txtPrimary.Lines[i];
+                    string sLine = i < txtSecondary.Lines.Length ? txtSecondary.Lines[i] : "<missing>";
+                    txtMerged.AppendText($"P: {pLine}\nS: {sLine}\n\n");
+                }
+            };
         }
 
         private void ShowDifferences(string primaryCode, string secondaryCode)
@@ -171,6 +245,33 @@ namespace FileComparerAppWin
 
             txtSecondary.SelectionStart = txtSecondary.GetFirstCharIndexFromLine(clickedLine);
             txtSecondary.ScrollToCaret();
+        }
+    }
+
+    // ✅ Custom RichTextBox for scroll event
+    public class SyncRichTextBox : RichTextBox
+    {
+        public event EventHandler Scroll;
+
+        private const int WM_VSCROLL = 0x0115;
+        private const int WM_MOUSEWHEEL = 0x020A;
+
+        protected override void WndProc(ref Message m)
+        {
+            base.WndProc(ref m);
+            if (m.Msg == WM_VSCROLL || m.Msg == WM_MOUSEWHEEL)
+            {
+                Scroll?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public void SyncScrollWith(SyncRichTextBox other)
+        {
+            int index = other.GetCharIndexFromPosition(new Point(1, 1));
+            int line = other.GetLineFromCharIndex(index);
+            int firstChar = GetFirstCharIndexFromLine(line);
+            this.SelectionStart = firstChar;
+            this.ScrollToCaret();
         }
     }
 }

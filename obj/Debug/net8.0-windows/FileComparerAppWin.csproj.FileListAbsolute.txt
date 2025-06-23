@@ -16,3 +16,22 @@ C:\Users\Papu New\source\repos\FileComparerAppWin\obj\Debug\net8.0-windows\FileC
 C:\Users\Papu New\source\repos\FileComparerAppWin\obj\Debug\net8.0-windows\ref\FileComparerAppWin.dll
 C:\Users\Papu New\source\repos\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.DiffViewerForm.resources
 C:\Users\Papu New\source\repos\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.LoadingForm.resources
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\bin\Debug\net8.0-windows\FileComparerAppWin.exe
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\bin\Debug\net8.0-windows\FileComparerAppWin.deps.json
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\bin\Debug\net8.0-windows\FileComparerAppWin.runtimeconfig.json
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\bin\Debug\net8.0-windows\FileComparerAppWin.dll
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\bin\Debug\net8.0-windows\FileComparerAppWin.pdb
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.DiffViewerForm.resources
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.LoadingForm.resources
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.MainForm.resources
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.csproj.GenerateResource.cache
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.AssemblyInfoInputs.cache
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.AssemblyInfo.cs
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.csproj.CoreCompileInputs.cache
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.sourcelink.json
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.dll
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\refint\FileComparerAppWin.dll
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.pdb
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.genruntimeconfig.cache
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\ref\FileComparerAppWin.dll

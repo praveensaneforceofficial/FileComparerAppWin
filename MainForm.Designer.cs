@@ -216,6 +216,7 @@ namespace FileComparerAppWin
             });
 
             lstDifferences.Dock = DockStyle.Fill;
+             lstDifferences.DisplayMember = "RelativePath";
             lstDifferences.DoubleClick += lstDifferences_DoubleClick;
 
             bottomPanel.Controls.Add(lstDifferences);
