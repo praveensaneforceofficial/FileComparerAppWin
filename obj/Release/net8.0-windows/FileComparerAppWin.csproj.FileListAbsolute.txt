@@ -1,0 +1,16 @@
+C:\Users\Papu New\source\repos\FileComparerAppWin\bin\Release\net8.0-windows\FileComparerAppWin.exe
+C:\Users\Papu New\source\repos\FileComparerAppWin\bin\Release\net8.0-windows\FileComparerAppWin.deps.json
+C:\Users\Papu New\source\repos\FileComparerAppWin\bin\Release\net8.0-windows\FileComparerAppWin.runtimeconfig.json
+C:\Users\Papu New\source\repos\FileComparerAppWin\bin\Release\net8.0-windows\FileComparerAppWin.dll
+C:\Users\Papu New\source\repos\FileComparerAppWin\bin\Release\net8.0-windows\FileComparerAppWin.pdb
+C:\Users\Papu New\source\repos\FileComparerAppWin\obj\Release\net8.0-windows\FileComparerAppWin.MainForm.resources
+C:\Users\Papu New\source\repos\FileComparerAppWin\obj\Release\net8.0-windows\FileComparerAppWin.csproj.GenerateResource.cache
+C:\Users\Papu New\source\repos\FileComparerAppWin\obj\Release\net8.0-windows\FileComparerAppWin.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Papu New\source\repos\FileComparerAppWin\obj\Release\net8.0-windows\FileComparerAppWin.AssemblyInfoInputs.cache
+C:\Users\Papu New\source\repos\FileComparerAppWin\obj\Release\net8.0-windows\FileComparerAppWin.AssemblyInfo.cs
+C:\Users\Papu New\source\repos\FileComparerAppWin\obj\Release\net8.0-windows\FileComparerAppWin.csproj.CoreCompileInputs.cache
+C:\Users\Papu New\source\repos\FileComparerAppWin\obj\Release\net8.0-windows\FileComparerAppWin.dll
+C:\Users\Papu New\source\repos\FileComparerAppWin\obj\Release\net8.0-windows\refint\FileComparerAppWin.dll
+C:\Users\Papu New\source\repos\FileComparerAppWin\obj\Release\net8.0-windows\FileComparerAppWin.pdb
+C:\Users\Papu New\source\repos\FileComparerAppWin\obj\Release\net8.0-windows\FileComparerAppWin.genruntimeconfig.cache
+C:\Users\Papu New\source\repos\FileComparerAppWin\obj\Release\net8.0-windows\ref\FileComparerAppWin.dll

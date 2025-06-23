@@ -1,0 +1,5 @@
+C:\Users\Papu New\source\repos\FileComparerAppWin\bin\Release\net8.0-windows\publish\Project1\FileComparerAppWin.exe
+C:\Users\Papu New\source\repos\FileComparerAppWin\bin\Release\net8.0-windows\publish\Project1\FileComparerAppWin.dll
+C:\Users\Papu New\source\repos\FileComparerAppWin\bin\Release\net8.0-windows\publish\Project1\FileComparerAppWin.deps.json
+C:\Users\Papu New\source\repos\FileComparerAppWin\bin\Release\net8.0-windows\publish\Project1\FileComparerAppWin.runtimeconfig.json
+C:\Users\Papu New\source\repos\FileComparerAppWin\bin\Release\net8.0-windows\publish\Project1\FileComparerAppWin.pdb
