@@ -21,7 +21,7 @@ namespace FileComparerAppWin
 
             // Form style
             this.FormBorderStyle = FormBorderStyle.None;
-            this.StartPosition = FormStartPosition.CenterParent;
+            this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.FromArgb(30, 30, 30);
             this.Opacity = 0.9;
             this.Width = 300;

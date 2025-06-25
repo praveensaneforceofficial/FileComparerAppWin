@@ -35,3 +35,5 @@ C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\
 C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.pdb
 C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.genruntimeconfig.cache
 C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\ref\FileComparerAppWin.dll
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.MainContainerForm.resources
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.DiffViewerControl.resources

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FileComparerAppWin")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4fbca10c34ed12ca8fb7bc6be637bef658b560ea")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f5c8155802c6eee670f8ad5946868119efc567bc")]
 [assembly: System.Reflection.AssemblyProductAttribute("FileComparerAppWin")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FileComparerAppWin")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

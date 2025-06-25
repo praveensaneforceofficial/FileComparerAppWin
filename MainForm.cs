@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using System.Text.Json;
 using System.Diagnostics;
 using System.Threading;
+using System.ComponentModel;
 
 
 namespace FileComparerAppWin
@@ -24,8 +25,12 @@ namespace FileComparerAppWin
         private List<ComparedFile> missingInCompare = new List<ComparedFile>();
         private List<ComparedFile> missingInPrimary = new List<ComparedFile>();
 
-        public MainForm()
+        private MainContainerForm parentContainer;
+
+
+        public MainForm(MainContainerForm mainContainerForm)
         {
+            parentContainer = mainContainerForm;
             InitializeComponent();
             treePrimary.AfterCheck += TreeView_AfterCheck;
             treeCompare.AfterCheck += TreeView_AfterCheck;
@@ -654,63 +659,87 @@ namespace FileComparerAppWin
         }
 
 
-        private void lstDifferences_DoubleClick(object sender, EventArgs e)
+      private void lstDifferences_DoubleClick(object sender, EventArgs e)
+{
+    // 📌 Validate sender and selected item
+    if (!(sender is ListBox listBox) || listBox.SelectedItem == null)
+        return;
+
+    // 📌 Try casting to your data model
+    if (!(listBox.SelectedItem is ComparedFile fileData))
+    {
+        MessageBox.Show("No file data associated with this item.", "Error",
+                       MessageBoxButtons.OK, MessageBoxIcon.Error);
+        return;
+    }
+
+    // 📌 Check if files exist
+    bool primaryExists = !string.IsNullOrEmpty(fileData.PrimaryPath) && File.Exists(fileData.PrimaryPath);
+    bool secondaryExists = !string.IsNullOrEmpty(fileData.ComparePath) && File.Exists(fileData.ComparePath);
+
+    if (!primaryExists || !secondaryExists)
+    {
+        string message = $"Primary: {fileData.PrimaryPath ?? "N/A"}\nStatus: {(primaryExists ? "Found" : "Missing")}\n\n" +
+                        $"Secondary: {fileData.ComparePath ?? "N/A"}\nStatus: {(secondaryExists ? "Found" : "Missing")}";
+
+        MessageBox.Show(message, "File Status", MessageBoxButtons.OK,
+            primaryExists && secondaryExists ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+        return;
+    }
+
+    // 🧪 Only handle "Different" status files
+    if (fileData.Status == "Different")
+    {
+        var loader = new LoadingForm();
+        loader.Show();
+
+        Task.Run(() =>
         {
-            if (!(sender is ListBox listBox) || listBox.SelectedItem == null)
-                return;
-
-            // Now we can directly cast SelectedItem to ComparedFile
-            if (!(listBox.SelectedItem is ComparedFile fileData))
+            try
             {
-                MessageBox.Show("No file data associated with this item.", "Error",
-                               MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+                // 🧾 Load both file contents
+                string primaryText = File.ReadAllText(fileData.PrimaryPath);
+                string secondaryText = File.ReadAllText(fileData.ComparePath);
 
-            // Rest of your existing double-click logic...
-            bool primaryExists = !string.IsNullOrEmpty(fileData.PrimaryPath) && File.Exists(fileData.PrimaryPath);
-            bool secondaryExists = !string.IsNullOrEmpty(fileData.ComparePath) && File.Exists(fileData.ComparePath);
-
-            if (!primaryExists || !secondaryExists)
-            {
-                string message = $"Primary: {fileData.PrimaryPath ?? "N/A"}\nStatus: {(primaryExists ? "Found" : "Missing")}\n\n" +
-                                $"Secondary: {fileData.ComparePath ?? "N/A"}\nStatus: {(secondaryExists ? "Found" : "Missing")}";
-
-                MessageBox.Show(message, "File Status", MessageBoxButtons.OK,
-                    primaryExists && secondaryExists ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
-                return;
-            }
-
-            if (fileData.Status == "Different")
-            {
-                var loader = new LoadingForm();
-                loader.Show();
-
-                Task.Run(() =>
+                this.Invoke((MethodInvoker)delegate
                 {
-                    try
-                    {
-                        string primaryText = File.ReadAllText(fileData.PrimaryPath);
-                        string secondaryText = File.ReadAllText(fileData.ComparePath);
+                    loader.Close();
 
-                        this.Invoke((MethodInvoker)delegate
-                        {
-                            loader.Close();
-                            new DiffViewerForm(primaryText, secondaryText).ShowDialog();
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        this.Invoke((MethodInvoker)delegate
-                        {
-                            loader.Close();
-                            MessageBox.Show($"Error comparing files:\n{ex.Message}",
-                                          "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        });
-                    }
+                    // 🧩 Instead of showing a modal window...
+                    // ❗ Make sure tabControl1 exists on your form
+
+                    parentContainer.OpenDiffTab(
+                        $"{Path.GetFileName(fileData.PrimaryPath)} vs {Path.GetFileName(fileData.ComparePath)}",
+                        primaryText,
+                        secondaryText
+                    );
+
+                    /*
+
+                    var tabPage = new TabPage($"{Path.GetFileName(fileData.PrimaryPath)} vs {Path.GetFileName(fileData.ComparePath)}");
+
+                    // 🔄 Replace this with your actual diff viewer control
+                    var diffViewer = new DiffViewerControl(primaryText, secondaryText); 
+                    diffViewer.Dock = DockStyle.Fill;
+
+                    tabPage.Controls.Add(diffViewer);
+                    */
+                  //  tabControl1.TabPages.Add(tabPage);
+                    //tabControl1.SelectedTab = tabPage;
                 });
             }
-        }
+            catch (Exception ex)
+            {
+                this.Invoke((MethodInvoker)delegate
+                {
+                    loader.Close();
+                    MessageBox.Show($"Error comparing files:\n{ex.Message}",
+                                  "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                });
+            }
+        });
+    }
+}
 
         private void UpdateParentCheckState(TreeNode node)
         {
