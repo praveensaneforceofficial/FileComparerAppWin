@@ -3,14 +3,6 @@
   "WorkspaceRootPath": "C:\\Users\\Papu New\\Desktop\\FMCG Project\\Difference Finder\\FileComparerAppWin\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{96E71009-A7E3-407D-A55F-128E4BA041BE}|FileComparerAppWin.csproj|c:\\users\\papu new\\desktop\\fmcg project\\difference finder\\filecomparerappwin\\maincontainerform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{96E71009-A7E3-407D-A55F-128E4BA041BE}|FileComparerAppWin.csproj|solutionrelative:maincontainerform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{96E71009-A7E3-407D-A55F-128E4BA041BE}|FileComparerAppWin.csproj|c:\\users\\papu new\\desktop\\fmcg project\\difference finder\\filecomparerappwin\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{96E71009-A7E3-407D-A55F-128E4BA041BE}|FileComparerAppWin.csproj|solutionrelative:mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{96E71009-A7E3-407D-A55F-128E4BA041BE}|FileComparerAppWin.csproj|c:\\users\\papu new\\desktop\\fmcg project\\difference finder\\filecomparerappwin\\mainform.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{96E71009-A7E3-407D-A55F-128E4BA041BE}|FileComparerAppWin.csproj|solutionrelative:mainform.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -19,8 +11,12 @@
       "RelativeMoniker": "D:0:0:{96E71009-A7E3-407D-A55F-128E4BA041BE}|FileComparerAppWin.csproj|solutionrelative:diffviewerform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{96E71009-A7E3-407D-A55F-128E4BA041BE}|FileComparerAppWin.csproj|c:\\users\\papu new\\desktop\\fmcg project\\difference finder\\filecomparerappwin\\diffviewercontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{96E71009-A7E3-407D-A55F-128E4BA041BE}|FileComparerAppWin.csproj|solutionrelative:diffviewercontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{96E71009-A7E3-407D-A55F-128E4BA041BE}|FileComparerAppWin.csproj|c:\\users\\papu new\\desktop\\fmcg project\\difference finder\\filecomparerappwin\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{96E71009-A7E3-407D-A55F-128E4BA041BE}|FileComparerAppWin.csproj|solutionrelative:mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{96E71009-A7E3-407D-A55F-128E4BA041BE}|FileComparerAppWin.csproj|c:\\users\\papu new\\desktop\\fmcg project\\difference finder\\filecomparerappwin\\maincontainerform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{96E71009-A7E3-407D-A55F-128E4BA041BE}|FileComparerAppWin.csproj|solutionrelative:maincontainerform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{96E71009-A7E3-407D-A55F-128E4BA041BE}|FileComparerAppWin.csproj|c:\\users\\papu new\\desktop\\fmcg project\\difference finder\\filecomparerappwin\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -34,76 +30,63 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 3,
               "Title": "MainContainerForm.cs",
               "DocumentMoniker": "C:\\Users\\Papu New\\Desktop\\FMCG Project\\Difference Finder\\FileComparerAppWin\\MainContainerForm.cs",
               "RelativeDocumentMoniker": "MainContainerForm.cs",
               "ToolTip": "C:\\Users\\Papu New\\Desktop\\FMCG Project\\Difference Finder\\FileComparerAppWin\\MainContainerForm.cs",
               "RelativeToolTip": "MainContainerForm.cs",
-              "ViewState": "AgIAABgAAAAAAAAAAAAcwCUAAAAwAAAAAAAAAA==",
+              "ViewState": "AgIAACYAAAAAAAAAAAASwCwAAAAtAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-06-25T08:18:49.683Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "DiffViewerControl.cs",
-              "DocumentMoniker": "C:\\Users\\Papu New\\Desktop\\FMCG Project\\Difference Finder\\FileComparerAppWin\\DiffViewerControl.cs",
-              "RelativeDocumentMoniker": "DiffViewerControl.cs",
-              "ToolTip": "C:\\Users\\Papu New\\Desktop\\FMCG Project\\Difference Finder\\FileComparerAppWin\\DiffViewerControl.cs",
-              "RelativeToolTip": "DiffViewerControl.cs",
-              "ViewState": "AgIAAJAAAAAAAAAAAAAYwJ4AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-25T07:22:41.146Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 1,
               "Title": "DiffViewerForm.cs",
               "DocumentMoniker": "C:\\Users\\Papu New\\Desktop\\FMCG Project\\Difference Finder\\FileComparerAppWin\\DiffViewerForm.cs",
               "RelativeDocumentMoniker": "DiffViewerForm.cs",
               "ToolTip": "C:\\Users\\Papu New\\Desktop\\FMCG Project\\Difference Finder\\FileComparerAppWin\\DiffViewerForm.cs",
               "RelativeToolTip": "DiffViewerForm.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEAAAABOAAAAAAAAAA==",
+              "ViewState": "AgIAAH8BAAAAAAAAAAApwIwBAAA8AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-06-23T09:35:47.245Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "MainForm.Designer.cs",
               "DocumentMoniker": "C:\\Users\\Papu New\\Desktop\\FMCG Project\\Difference Finder\\FileComparerAppWin\\MainForm.Designer.cs",
               "RelativeDocumentMoniker": "MainForm.Designer.cs",
               "ToolTip": "C:\\Users\\Papu New\\Desktop\\FMCG Project\\Difference Finder\\FileComparerAppWin\\MainForm.Designer.cs",
               "RelativeToolTip": "MainForm.Designer.cs",
-              "ViewState": "AgIAAMwAAAAAAAAAAAAawNoAAAA5AAAAAAAAAA==",
+              "ViewState": "AgIAAMkAAAAAAAAAAAAwwNcAAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-06-23T08:35:54.268Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "MainForm.cs",
               "DocumentMoniker": "C:\\Users\\Papu New\\Desktop\\FMCG Project\\Difference Finder\\FileComparerAppWin\\MainForm.cs",
               "RelativeDocumentMoniker": "MainForm.cs",
               "ToolTip": "C:\\Users\\Papu New\\Desktop\\FMCG Project\\Difference Finder\\FileComparerAppWin\\MainForm.cs",
               "RelativeToolTip": "MainForm.cs",
-              "ViewState": "AgIAAG0DAAAAAAAAAAASwHkDAAAqAAAAAAAAAA==",
+              "ViewState": "AgIAAG8DAAAAAAAAAAAxwHcDAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-06-23T08:22:16.612Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 4,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Papu New\\Desktop\\FMCG Project\\Difference Finder\\FileComparerAppWin\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
@@ -111,8 +94,7 @@
               "RelativeToolTip": "Program.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAACAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-23T08:22:14.835Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-23T08:22:14.835Z"
             }
           ]
         }

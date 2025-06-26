@@ -23,6 +23,7 @@ C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\bin\
 C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\bin\Debug\net8.0-windows\FileComparerAppWin.pdb
 C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.DiffViewerForm.resources
 C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.LoadingForm.resources
+C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.MainContainerForm.resources
 C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.MainForm.resources
 C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.csproj.GenerateResource.cache
 C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.GeneratedMSBuildEditorConfig.editorconfig
@@ -35,5 +36,3 @@ C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\
 C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.pdb
 C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.genruntimeconfig.cache
 C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\ref\FileComparerAppWin.dll
-C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.MainContainerForm.resources
-C:\Users\Papu New\Desktop\FMCG Project\Difference Finder\FileComparerAppWin\obj\Debug\net8.0-windows\FileComparerAppWin.DiffViewerControl.resources

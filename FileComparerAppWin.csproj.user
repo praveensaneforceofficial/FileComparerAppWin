@@ -4,9 +4,6 @@
     <_LastSelectedProfileId>C:\Users\Papu New\source\repos\FileComparerAppWin\Properties\PublishProfiles\FolderProfile.pubxml</_LastSelectedProfileId>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Update="DiffViewerControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Update="DiffViewerForm.cs">
       <SubType>Form</SubType>
     </Compile>

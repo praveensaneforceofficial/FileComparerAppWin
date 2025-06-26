@@ -7,11 +7,13 @@ namespace FileComparerAppWin
 {
     public partial class DiffViewerForm : Form
     {
-        // 👇 Replaced RichTextBox with SyncRichTextBox
         private SyncRichTextBox txtPrimary;
         private SyncRichTextBox txtSecondary;
+        private RichTextBox lineNumbersPrimary; // 👈 Line numbers for Primary
+        private RichTextBox lineNumbersSecondary; // 👈 Line numbers for Secondary
         private Panel diffMapPanel;
-        private RichTextBox txtMerged; // 👈 Added for merged output
+        private RichTextBox lineNumbersMerged;
+        private SyncRichTextBox txtMerged;
         private List<int> diffLines = new List<int>();
         private SplitContainer splitContainer;
 
@@ -20,18 +22,6 @@ namespace FileComparerAppWin
             this.Text = "🔍 Code Difference Viewer";
             this.Size = new Size(1000, 700);
             this.MinimumSize = new Size(800, 600);
-
-            splitContainer = new SplitContainer();
-            splitContainer.Dock = DockStyle.Fill;
-            splitContainer.Orientation = Orientation.Vertical;
-
-            //txtPrimary = new SyncRichTextBox { Dock = DockStyle.Fill, ReadOnly = true };
-           // txtSecondary = new SyncRichTextBox { Dock = DockStyle.Fill, ReadOnly = true };
-
-            //splitContainer.Panel1.Controls.Add(txtPrimary);
-            //splitContainer.Panel2.Controls.Add(txtSecondary);
-
-           // this.Controls.Add(splitContainer);
 
             // 👇 Create outer layout to include buttons, code view, and merged panel
             var outerLayout = new TableLayoutPanel
@@ -66,6 +56,41 @@ namespace FileComparerAppWin
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 49.5f));
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 1f));
 
+            // 👇 Setup line number boxes
+            lineNumbersPrimary = new RichTextBox
+            {
+                Dock = DockStyle.Left,
+                Width = 100,
+                ReadOnly = true,
+                BackColor = Color.LightGray,
+                Font = new Font("Consolas", 10),
+                ScrollBars = RichTextBoxScrollBars.None,
+                BorderStyle = BorderStyle.None
+            };
+
+            lineNumbersSecondary = new RichTextBox
+            {
+                Dock = DockStyle.Left,
+                Width = 100,
+                ReadOnly = true,
+                BackColor = Color.LightGray,
+                Font = new Font("Consolas", 10),
+                ScrollBars = RichTextBoxScrollBars.None,
+                BorderStyle = BorderStyle.None
+            };
+            // 👇 Merged output
+            lineNumbersMerged = new RichTextBox
+            {
+                Dock = DockStyle.Left,
+                Width = 100,
+                ReadOnly = true,
+                BackColor = Color.LightGray,
+                Font = new Font("Consolas", 10),
+                ScrollBars = RichTextBoxScrollBars.None,
+                BorderStyle = BorderStyle.None
+            };
+
+            // 👇 Setup diff boxes
             txtPrimary = new SyncRichTextBox
             {
                 Dock = DockStyle.Fill,
@@ -84,9 +109,54 @@ namespace FileComparerAppWin
                 Font = new Font("Consolas", 10)
             };
 
-            // 👇 Scroll sync setup
-            txtPrimary.Scroll += (s, e) => txtSecondary.SyncScrollWith(txtPrimary);
-            txtSecondary.Scroll += (s, e) => txtPrimary.SyncScrollWith(txtSecondary);
+
+            txtMerged = new SyncRichTextBox
+            {
+                Dock = DockStyle.Fill,
+                ReadOnly = false,
+                WordWrap = false,
+                ScrollBars = RichTextBoxScrollBars.Both,
+                Font = new Font("Consolas", 10),
+                BackColor = Color.LightYellow
+            };
+
+
+            txtPrimary.Scroll += (s, e) =>
+            {
+                txtMerged.SyncScrollWith(txtPrimary);
+                txtSecondary.SyncScrollWith(txtPrimary);    
+                SyncScroll(lineNumbersPrimary, txtPrimary);   
+                SyncScroll(lineNumbersSecondary, txtPrimary);
+                SyncScroll(lineNumbersMerged, txtMerged);
+            };
+
+            txtSecondary.Scroll += (s, e) =>
+            {
+                txtMerged.SyncScrollWith(txtPrimary);
+                txtPrimary.SyncScrollWith(txtSecondary);       
+                SyncScroll(lineNumbersPrimary, txtPrimary);
+                SyncScroll(lineNumbersSecondary, txtSecondary);
+                SyncScroll(lineNumbersMerged, txtMerged);
+            };
+
+
+            txtMerged.Scroll += (s, e) =>
+            {
+                txtPrimary.SyncScrollWith(txtMerged); 
+                txtSecondary.SyncScrollWith(txtMerged); 
+                SyncScroll(lineNumbersPrimary, txtMerged); 
+                SyncScroll(lineNumbersSecondary, txtMerged);
+                SyncScroll(lineNumbersMerged, txtMerged);
+            };
+
+            var primaryPanel = new Panel { Dock = DockStyle.Fill };
+            primaryPanel.Controls.Add(txtPrimary);
+            primaryPanel.Controls.Add(lineNumbersPrimary);
+
+            var secondaryPanel = new Panel { Dock = DockStyle.Fill };
+            secondaryPanel.Controls.Add(txtSecondary);
+            secondaryPanel.Controls.Add(lineNumbersSecondary);
+
 
             diffMapPanel = new Panel
             {
@@ -97,32 +167,30 @@ namespace FileComparerAppWin
             diffMapPanel.Paint += DiffMapPanel_Paint;
             diffMapPanel.MouseClick += DiffMapPanel_MouseClick;
 
-            layout.Controls.Add(txtPrimary, 0, 0);
-            layout.Controls.Add(txtSecondary, 1, 0);
+            layout.Controls.Add(primaryPanel, 0, 0);
+            layout.Controls.Add(secondaryPanel, 1, 0);
             layout.Controls.Add(diffMapPanel, 2, 0);
 
-            // 👇 Merged output richtextbox
-            txtMerged = new RichTextBox
-            {
-                Dock = DockStyle.Fill,
-                ReadOnly = false,
-                WordWrap = false,
-                ScrollBars = RichTextBoxScrollBars.Both,
-                Font = new Font("Consolas", 10),
-                BackColor = Color.LightYellow
-            };
 
-            // 👇 Add all components to outer layout
-            outerLayout.Controls.Add(buttonPanel, 0, 0); // Top row
-            outerLayout.Controls.Add(layout, 0, 1);      // Middle row (code)
-            outerLayout.Controls.Add(txtMerged, 0, 2);    // Bottom row (merged)
+      
+
+            // 👇 Wrap merged view and line numbers in a panel
+            var mergedPanel = new Panel { Dock = DockStyle.Fill };
+            mergedPanel.Controls.Add(lineNumbersMerged);
+            mergedPanel.Controls.Add(txtMerged);
+           
+
+            // 👇 Add to outer layout
+            outerLayout.Controls.Add(buttonPanel, 0, 0);
+            outerLayout.Controls.Add(layout, 0, 1);
+            outerLayout.Controls.Add(mergedPanel, 0, 2); // ✅ REPLACE with panel
 
             this.Controls.Add(outerLayout);
 
             // 👇 Show diffs
             ShowDifferences(primaryCode, secondaryCode);
 
-            // 👇 Button click events for merging
+            // 👇 Merging button actions
             btnPrimary.Click += (s, e) =>
             {
                 txtMerged.Clear();
@@ -154,25 +222,60 @@ namespace FileComparerAppWin
 
             var diffs = GetLineDiffs(primaryLines, secondaryLines);
 
+            txtPrimary.Clear();
+            txtSecondary.Clear();
+            diffLines.Clear();
+            lineNumbersPrimary.Clear();
+            lineNumbersSecondary.Clear();
+
             int lineNum = 0;
+
             foreach (var diff in diffs)
             {
-                string linePrefix = (lineNum + 1).ToString().PadLeft(4) + ": ";
+                bool isPrimaryMissing = string.IsNullOrEmpty(diff.primary);
+                bool isSecondaryMissing = string.IsNullOrEmpty(diff.secondary);
 
+                // 👇 Append actual code lines
                 if (diff.isMatch)
                 {
-                    AppendColoredLine(txtPrimary, linePrefix + diff.primary, Color.LightGreen);
-                    AppendColoredLine(txtSecondary, linePrefix + diff.secondary, Color.LightGreen);
+                    AppendColoredLine(txtMerged, diff.primary, Color.LightGreen);
+                    AppendColoredLine(txtPrimary, diff.primary, Color.LightGreen);
+                    AppendColoredLine(txtSecondary, diff.secondary, Color.LightGreen);
                 }
                 else
                 {
                     diffLines.Add(lineNum);
-                    AppendColoredLine(txtPrimary, linePrefix + (string.IsNullOrEmpty(diff.primary) ? "<missing>" : diff.primary), string.IsNullOrEmpty(diff.primary) ? Color.MediumVioletRed : Color.LightPink);
-                    AppendColoredLine(txtSecondary, linePrefix + (string.IsNullOrEmpty(diff.secondary) ? "<missing>" : diff.secondary), string.IsNullOrEmpty(diff.secondary) ? Color.MediumVioletRed : Color.LightSkyBlue);
+
+                    AppendColoredLine(txtPrimary, isPrimaryMissing ? "" : diff.primary,
+                        isPrimaryMissing ? Color.MediumVioletRed : Color.LightPink);
+
+                    AppendColoredLine(txtSecondary, isSecondaryMissing ? "" : diff.secondary,
+                        isSecondaryMissing ? Color.MediumVioletRed : Color.LightSkyBlue);
                 }
+
+                // 👇 Append line numbers with + or - markers
+                string primaryMarker = isPrimaryMissing ? "   " : (isSecondaryMissing ? " -" : "  ");
+                string secondaryMarker = isSecondaryMissing ? "   " : (isPrimaryMissing ? " +" : "  ");
+
+                string lineLabel = (lineNum + 1).ToString().PadLeft(4);
+                lineNumbersPrimary.AppendText(lineLabel + primaryMarker + "\n");
+                lineNumbersSecondary.AppendText(lineLabel + secondaryMarker + "\n");
+
+                lineNumbersMerged.AppendText(lineLabel+ "\n");
                 lineNum++;
             }
+
             diffMapPanel.Invalidate();
+        }
+
+        private void UpdateLineNumbers(RichTextBox source, RichTextBox numberBox)
+        {
+            var lines = source.Lines;
+            numberBox.Clear();
+            for (int i = 0; i < lines.Length; i++)
+            {
+                numberBox.AppendText((i + 1).ToString().PadLeft(4) + "\n");
+            }
         }
 
         private void AppendColoredLine(RichTextBox box, string text, Color color)
@@ -258,6 +361,15 @@ namespace FileComparerAppWin
 
             txtSecondary.SelectionStart = txtSecondary.GetFirstCharIndexFromLine(clickedLine);
             txtSecondary.ScrollToCaret();
+        }
+
+        private void SyncScroll(RichTextBox target, RichTextBox reference)
+        {
+            int index = reference.GetCharIndexFromPosition(new Point(1, 1));
+            int line = reference.GetLineFromCharIndex(index);
+            int firstChar = target.GetFirstCharIndexFromLine(line);
+            target.SelectionStart = firstChar;
+            target.ScrollToCaret();
         }
     }
 
